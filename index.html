@@ -1,0 +1,1141 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>IA Generativa: ¿amenaza o herramienta?</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #d6f3f7;
+    --bg-soft: #ffffff;
+    --panel: rgba(255,255,255,0.65);
+    --panel-border: rgba(15,23,42,0.14);
+    --text: #0f2a33;
+    --muted: #4f6b75;
+ 
+    --cyan: #0e7490;
+    --violet: #6d28d9;
+    --rose: #be123c;
+    --amber: #b45309;
+  }
+ 
+  *{ box-sizing: border-box; }
+ 
+  html{ scroll-behavior: smooth; }
+ 
+  body{
+    font-family: 'Inter', sans-serif;
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+  }
+ 
+  h1, h2, h3{
+    font-family: 'Space Grotesk', sans-serif;
+    line-height: 1.15;
+    margin: 0;
+  }
+ 
+  .mono{ font-family: 'JetBrains Mono', monospace; letter-spacing: 0.08em; }
+ 
+  /* ---------- progress bar ---------- */
+  .progress-bar{
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%;
+    height: 4px;
+    background: rgba(15,23,42,0.06);
+    z-index: 999;
+  }
+  .progress-fill{
+    height: 100%;
+    width: 0%;
+    background: var(--cyan);
+    transition: width 0.1s linear;
+  }
+ 
+  /* ---------- hero ---------- */
+  .hero{
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 90px 24px 60px;
+    position: relative;
+    overflow: hidden;
+    background: var(--bg-soft);
+    border-bottom: 1px solid var(--panel-border);
+  }
+ 
+  .hero .eyebrow{
+    color: var(--cyan);
+    font-size: 0.78rem;
+    font-weight: 600;
+    margin-bottom: 16px;
+    text-transform: uppercase;
+  }
+ 
+  .hero h1{
+    font-size: clamp(2.2rem, 6vw, 4rem);
+    max-width: 850px;
+    color: var(--cyan);
+  }
+ 
+  .hero p.subtitle{
+    margin: 22px 0 36px;
+    font-size: clamp(1rem, 2vw, 1.2rem);
+    color: var(--muted);
+    max-width: 560px;
+  }
+ 
+  /* hero image placeholder */
+  .hero .img-frame{
+    width: min(640px, 100%);
+    aspect-ratio: 16/8;
+    margin-bottom: 40px;
+  }
+ 
+  /* roadmap / signature element */
+  .roadmap{
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 36px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .roadmap .stop{
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border-radius: 999px;
+    border: 1px solid var(--panel-border);
+    background: var(--panel);
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform .2s ease, border-color .2s ease;
+  }
+  .roadmap .stop:hover{ transform: translateY(-2px); }
+  .roadmap .stop .dot{
+    width: 9px; height: 9px; border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .roadmap .line{
+    width: 28px; height: 2px;
+    background: var(--panel-border);
+  }
+  .stop--cyan .dot{ background: var(--cyan); }
+  .stop--cyan:hover{ border-color: var(--cyan); }
+  .stop--violet .dot{ background: var(--violet); }
+  .stop--violet:hover{ border-color: var(--violet); }
+  .stop--rose .dot{ background: var(--rose); }
+  .stop--rose:hover{ border-color: var(--rose); }
+  .stop--amber .dot{ background: var(--amber); }
+  .stop--amber:hover{ border-color: var(--amber); }
+ 
+  /* buttons */
+  .btn{
+    padding: 14px 30px;
+    border-radius: 999px;
+    border: none;
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    color: #ffffff;
+    background: var(--cyan);
+    transition: transform .2s ease, box-shadow .2s ease;
+  }
+  .btn:hover{
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(14,116,144,0.25);
+  }
+  .btn-outline{
+    background: transparent;
+    border: 1px solid var(--panel-border);
+    color: var(--text);
+    padding: 10px 22px;
+    border-radius: 999px;
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 600;
+    font-size: 0.85rem;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: border-color .2s ease, color .2s ease;
+  }
+ 
+  /* ---------- navbar ---------- */
+  .navbar{
+    position: sticky;
+    top: 4px;
+    z-index: 100;
+    background: rgba(255,255,255,0.8);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--panel-border);
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 16px;
+    flex-wrap: wrap;
+  }
+  .navbar button{
+    background: transparent;
+    border: 1px solid transparent;
+    color: var(--muted);
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 600;
+    font-size: 0.82rem;
+    padding: 8px 16px;
+    border-radius: 999px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all .2s ease;
+  }
+  .navbar button .num{
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    opacity: 0.6;
+  }
+  .navbar button.active, .navbar button:hover{
+    color: var(--text);
+    border-color: var(--panel-border);
+    background: var(--panel);
+  }
+  .navbar button[data-accent="cyan"].active{ color: var(--cyan); border-color: var(--cyan); }
+  .navbar button[data-accent="violet"].active{ color: var(--violet); border-color: var(--violet); }
+  .navbar button[data-accent="rose"].active{ color: var(--rose); border-color: var(--rose); }
+  .navbar button[data-accent="amber"].active{ color: var(--amber); border-color: var(--amber); }
+ 
+  /* ---------- sections ---------- */
+  .section{
+    padding: 90px 24px;
+    max-width: 1080px;
+    margin: 0 auto;
+    position: relative;
+  }
+ 
+  .section-head{
+    display: flex;
+    align-items: flex-start;
+    gap: 24px;
+    margin-bottom: 44px;
+  }
+ 
+  .section-num{
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 700;
+    font-size: clamp(3rem, 8vw, 5.5rem);
+    line-height: 1;
+    opacity: 0.28;
+    flex-shrink: 0;
+  }
+ 
+  .section-head h2{
+    font-size: clamp(1.5rem, 4vw, 2.4rem);
+    padding-top: 12px;
+  }
+  .section-head .kicker{
+    display: block;
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+ 
+  .section--cyan .section-num,
+  .section--cyan .kicker{ color: var(--cyan); }
+  .section--violet .section-num,
+  .section--violet .kicker{ color: var(--violet); }
+  .section--rose .section-num,
+  .section--rose .kicker{ color: var(--rose); }
+  .section--amber .section-num,
+  .section--amber .kicker{ color: var(--amber); }
+ 
+  /* fact chips */
+  .chips{
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 32px;
+  }
+  .chip{
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border-radius: 999px;
+    border: 1px solid var(--panel-border);
+    background: var(--panel);
+    font-size: 0.82rem;
+    color: var(--muted);
+  }
+  .chip svg{ flex-shrink: 0; }
+  .section--cyan .chip svg{ color: var(--cyan); }
+  .section--violet .chip svg{ color: var(--violet); }
+  .section--rose .chip svg{ color: var(--rose); }
+ 
+  /* cards */
+  .card{
+    background: var(--panel);
+    border: 1px solid var(--panel-border);
+    margin: 12px 0;
+    padding: 18px 22px;
+    border-radius: 14px;
+    cursor: pointer;
+    transition: border-color .2s ease, background .2s ease;
+  }
+  .card:hover{ background: rgba(15,23,42,0.05); }
+  .section--cyan .card:hover{ border-color: var(--cyan); }
+  .section--violet .card:hover{ border-color: var(--violet); }
+  .section--rose .card:hover{ border-color: var(--rose); }
+ 
+  .card-head{
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 600;
+    font-size: 1.02rem;
+  }
+  .card-head .icon{ flex-shrink: 0; display:flex; }
+  .section--cyan .card-head .icon{ color: var(--cyan); }
+  .section--violet .card-head .icon{ color: var(--violet); }
+  .section--rose .card-head .icon{ color: var(--rose); }
+ 
+  .card-head .chevron{
+    margin-left: auto;
+    transition: transform .3s ease;
+    color: var(--muted);
+    flex-shrink: 0;
+  }
+  .card.active .chevron{ transform: rotate(180deg); }
+ 
+  .content-wrap{
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows .35s ease;
+  }
+  .card.active .content-wrap{ grid-template-rows: 1fr; }
+  .content-wrap > .content{
+    overflow: hidden;
+    min-height: 0;
+  }
+  .content-wrap > .content > div{
+    padding-top: 14px;
+    color: var(--muted);
+    font-size: 0.95rem;
+    border-top: 1px solid var(--panel-border);
+    margin-top: 14px;
+  }
+ 
+  /* recuadro oscuro para listas dentro de las tarjetas */
+  .info-box{
+    background: #5d98ab;
+    color: #e6f4f7;
+    border-radius: 10px;
+    padding: 14px 18px;
+    margin-top: 12px;
+  }
+  .info-box ol{
+    margin: 8px 0 0;
+    padding-left: 20px;
+  }
+  .info-box li{
+    margin-bottom: 8px;
+  }
+  .info-box li:last-child{ margin-bottom: 0; }
+ 
+  /* cita de fuente, pequeña y discreta */
+  .source{
+    display: block;
+    margin-top: 10px;
+    font-size: 0.7rem;
+    line-height: 1.4;
+    color: var(--muted);
+    opacity: 0.75;
+  }
+ 
+  /* image grid */
+  .img-grid{
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+    margin: 32px 0;
+  }
+  @media (max-width: 720px){
+    .img-grid{ grid-template-columns: 1fr; }
+  }
+ 
+  .img-frame{
+    position: relative;
+    border-radius: 16px;
+    overflow: hidden;
+    min-height: 200px;
+    border: 1.5px dashed var(--panel-border);
+    background: var(--bg);
+    display: flex;
+    height: 260px;
+  }
+  .img-frame img{
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 1;
+  }
+  .img-frame .img-label{
+    position: relative;
+    z-index: 0;
+    margin: auto;
+    text-align: center;
+    padding: 16px;
+    color: var(--muted);
+    font-size: 0.78rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    max-width: 220px;
+  }
+  .img-frame .img-label .mono{ font-size: 0.68rem; opacity: 0.7; }
+  .img-frame--cyan{ border-color: rgba(14,116,144,0.4); }
+  .img-frame--cyan svg{ color: var(--cyan); }
+  .img-frame--violet{ border-color: rgba(109,40,217,0.4); }
+  .img-frame--violet svg{ color: var(--violet); }
+  .img-frame--rose{ border-color: rgba(190,18,60,0.4); }
+  .img-frame--rose svg{ color: var(--rose); }
+  .img-frame--amber{ border-color: rgba(180,83,9,0.4); }
+  .img-frame--amber svg{ color: var(--amber); }
+ 
+  /* video button */
+  .video-btn{
+    margin-top: 28px;
+  }
+ 
+  /* conclusion */
+  .section--amber{
+    text-align: center;
+  }
+  .section--amber .section-head{
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+  .quote{
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: clamp(1.3rem, 3.5vw, 2rem);
+    font-weight: 600;
+    max-width: 760px;
+    margin: 0 auto 36px;
+    line-height: 1.5;
+    color: var(--amber);
+  }
+  .quote::before, .quote::after{ content: '"'; }
+ 
+  /* footer */
+  footer{
+    text-align: center;
+    padding: 36px 24px 60px;
+    color: var(--muted);
+    font-size: 0.8rem;
+    border-top: 1px solid var(--panel-border);
+  }
+ 
+  /* ---------- modal ---------- */
+  .modal{
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(15,23,42,0.5);
+    backdrop-filter: blur(4px);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .modal-content{
+    background: var(--bg-soft);
+    border: 1px solid var(--panel-border);
+    border-radius: 16px;
+    padding: 16px;
+    width: min(720px, 100%);
+    position: relative;
+  }
+  .modal-content iframe{
+    border-radius: 10px;
+    display: block;
+  }
+  .close{
+    position: absolute;
+    top: -14px;
+    right: -14px;
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background: var(--rose);
+    color: var(--bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-weight: 700;
+    font-size: 1.1rem;
+  }
+
+ .neon{
+  color: var(--cyan);
+  font-weight: 600;
+  text-shadow:
+    0 0 6px rgba(96, 221, 255, 0.9),
+    0 0 14px rgba(124, 208, 231, 0.6),
+    0 0 22px rgba(115, 185, 204, 0.4);
+  transition: text-shadow .2s ease;
+}
+
+.neon-morado{
+  color: #c084fc;
+  font-weight: 600;
+  text-shadow:
+    0 0 6px rgba(192, 132, 252, 0.9),
+    0 0 16px rgba(216, 180, 254, 0.75),
+    0 0 28px rgba(233, 213, 255, 0.55);
+  transition: text-shadow .2s ease;
+}
+
+
+@media (min-width: 1100px){
+  .img-frame{
+    height: 320px;
+  }
+}
+
+/* móvil sigue siendo flexible */
+@media (max-width: 720px){
+  .img-frame{
+    height: auto;
+    min-height: 200px;
+  }
+}
+
+.video-preview{
+  position: relative;
+  width: 100%;
+  max-width: 520px;
+  margin-top: 28px;
+  border-radius: 16px;
+  overflow: hidden;
+  cursor: pointer;
+  border: 1px solid var(--panel-border);
+  transition: transform .2s ease, box-shadow .2s ease;
+}
+
+.video-preview:hover{
+  transform: translateY(-3px);
+  box-shadow: 0 12px 30px rgba(0,0,0,0.15);
+}
+
+.video-preview img{
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
+
+.video-preview .overlay{
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.45);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  color: white;
+  font-weight: 600;
+  font-family: 'Space Grotesk', sans-serif;
+  text-align: center;
+}
+
+.play-button{
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(6px);
+  transition: transform .2s ease, background .2s ease;
+}
+
+.video-preview:hover .play-button{
+  transform: scale(1.08);
+  background: rgba(255,255,255,0.25);
+}
+
+.video-frame{
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+/* efecto tipo “video clickable” */
+.video-frame::after{
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at center, rgba(255,255,255,0.08), rgba(0,0,0,0.35));
+  z-index: 2;
+  opacity: 0.9;
+  transition: opacity .3s ease;
+}
+
+.video-frame:hover::after{
+  opacity: 1;
+}
+
+/* PLAY MÁS “VIDEO APP” */
+.play-circle{
+  width: 78px;
+  height: 78px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.18);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(10px);
+  box-shadow:
+    0 0 0 2px rgba(255,255,255,0.15),
+    0 0 25px rgba(255,255,255,0.25);
+  transform: scale(1);
+  transition: transform .25s ease, box-shadow .25s ease;
+  z-index: 3;
+}
+
+/* hover más “clickable” */
+.video-frame:hover .play-circle{
+  transform: scale(1.15);
+  box-shadow:
+    0 0 0 2px rgba(255,255,255,0.25),
+    0 0 40px rgba(255,255,255,0.35);
+}
+
+.video-badge{
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 4;
+  font-size: 0.65rem;
+  letter-spacing: 0.12em;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(0,0,0,0.45);
+  color: white;
+  backdrop-filter: blur(6px);
+}
+</style>
+</head>
+
+<body>
+
+<div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+
+<header class="hero">
+  <span class="eyebrow mono">// Evidencia final #2 - Valeria Rosado</span>
+  <h1>Impacto de la Inteligencia Artificial Generativa en la Ingeniería en Software</h1>
+  <p class="subtitle">Un resumen de lo que es la Inteligencia Artificial, sus ventajas, peligros y nuestro futuro como programadores.</p>
+
+  <div class="img-frame img-frame--cyan">
+    <img src="/images/principal.jpeg" alt="Ilustración principal sobre IA generativa" onerror="this.style.display='none'">
+  </div>
+
+  <div class="roadmap">
+    <div class="stop stop--cyan" onclick="scrollToSection('tema1')"><span class="dot"></span> 01 Lenguajes IA</div>
+    <div class="line"></div>
+    <div class="stop stop--violet" onclick="scrollToSection('tema2')"><span class="dot"></span> 02 Futuro del software</div>
+    <div class="line"></div>
+    <div class="stop stop--rose" onclick="scrollToSection('tema3')"><span class="dot"></span> 03 Ética</div>
+    <div class="line"></div>
+    <div class="stop stop--amber" onclick="scrollToSection('conclusion')"><span class="dot"></span> 04 Conclusión</div>
+  </div>
+
+  <button class="btn" onclick="scrollToSection('tema1')">Inicio ↓</button>
+</header>
+
+<nav class="navbar">
+  <button data-accent="cyan" data-target="tema1" onclick="scrollToSection('tema1')"><span class="num mono">01</span> Lenguajes IA</button>
+  <button data-accent="violet" data-target="tema2" onclick="scrollToSection('tema2')"><span class="num mono">02</span> Futuro del software</button>
+  <button data-accent="rose" data-target="tema3" onclick="scrollToSection('tema3')"><span class="num mono">03</span> Ética</button>
+  <button data-accent="amber" data-target="conclusion" onclick="scrollToSection('conclusion')"><span class="num mono">04</span> Conclusión</button>
+</nav>
+
+<main>
+
+<!-- ----------- TEMA 1 ----------- -->
+<section id="tema1" class="section section--cyan">
+  <div class="section-head">
+    <div class="section-num mono">01</div>
+    <div>
+      <span class="kicker">Tema 01</span>
+      <h2>Teoría de lenguajes, las herramientas y métodos</h2>
+    </div>
+  </div>
+
+  <div class="chips">
+    <div class="chip">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M7 8h10M7 12h6M7 16h8"/></svg>
+      Tokens, no palabras
+    </div>
+    <div class="chip">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+      Léxico → sintáctico → semántico
+    </div>
+    <div class="chip">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M6 8h.01M10 8h.01"/><path d="M2 12h20"/></svg>
+      Como un compilador
+    </div>
+  </div>
+
+  <div class="card" onclick="toggle(this)">
+    <div class="card-head">
+      <span class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span>
+      ¿Qué lenguaje entiende la IA?
+      <span class="chevron">▾</span>
+    </div>
+    <div class="content-wrap">
+      <div class="content">
+        <div>
+          La IA no entiende lenguajes humanos o de programación directamente, sino 
+          tokens numéricos: fragmentos de texto convertidos en números que el modelo 
+          procesa matemáticamente.
+          <br>En el caso de los modelos de texto:
+          <div class="info-box">
+            <ol>
+              <li>El prompt es dividido en unidades más pequeñas (llamadas tokens) que son ingresadas en el GPT.</li>
+              <li>El GPT utiliza patrones estadísticos para predecir las posibles palabras o frases que podrían conformar una respuesta coherente al prompt.</li>
+              <li>Las palabras o frases predichas son convertidas en texto legible.</li>
+              <li>El texto legible es filtrado a través de lo que se conoce como "barandillas" (guardrails) para eliminar cualquier contenido ofensivo.</li>
+              <li>Los pasos 2 a 4 se repiten hasta que finaliza una respuesta. La respuesta se considera finalizada cuando alcanza un límite máximo de tokens o cumple con criterios de finalización predefinidos.</li>
+              <li>La respuesta se postprocesa para mejorar su legibilidad aplicando formato, puntuación y otras adaptaciones (como empezar la respuesta con palabras que podría utilizar un humano, como "Claro", "Por supuesto" o "Lo siento").</li>
+            </ol>
+          </div>
+          <span class="source">Fengchun, M., Holmes, W., &amp; UNESCO. (2024). Guía para el uso de IA generativa en educación e investigación. https://unesdoc.unesco.org/ark:/48223/pf0000389227.locale=es</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" onclick="toggle(this)">
+    <div class="card-head">
+      <span class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg></span>
+      Relación con análisis léxico, sintáctico y semántico
+      <span class="chevron">▾</span>
+    </div>
+    <div class="content-wrap">
+      <div class="content">
+        <div>
+            Es similar al funcionamiento de un compilador: convierte el texto en unidades 
+            <span class="neon">(léxico)</span>, organiza esas unidades en una estructura 
+            <span class="neon">(sintaxis)</span> y luego interpreta su significado 
+            <span class="neon">(semántica)</span>.
+
+            <br>
+
+            Sin embargo, aunque puede realizar un análisis léxico automatizado al segmentar texto en unidades discretas 
+            <span class="neon">(tokens)</span>, posee un dominio del análisis sintáctico que le permite 
+            estructurar oraciones con corrección gramatical excelente, no cuenta con análisis semántico, 
+            por la correlación estadística, así que la validación lógica depende del juicio crítico del usuario.
+            <span class="source">Fengchun, M., Holmes, W., &amp; UNESCO. (2024). Guía para el uso de IA generativa en educación e investigación. https://unesdoc.unesco.org/ark:/48223/pf0000389227.locale=es</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- IMÁGENES TEMA 1 -->
+  <div class="img-grid">
+    <div class="img-frame img-frame--cyan">
+      <img src="/images/procesamiento-ia.png" alt="Diagrama de tokenización de texto" onerror="this.style.display='none'">
+    </div>
+    <div class="img-frame img-frame--cyan">
+      <img src="/images/pipeline-vs-ia.png" alt="Comparación entre IA y compilador" onerror="this.style.display='none'">
+    </div>
+  </div>
+</section>
+
+<!-- ----------- TEMA 2 ----------- -->
+<section id="tema2" class="section section--violet">
+  <div class="section-head">
+    <div class="section-num mono">02</div>
+    <div>
+      <span class="kicker">Tema 02</span>
+      <h2>El futuro del desarrollador de software</h2>
+    </div>
+  </div>
+
+  <div class="chips">
+    <div class="chip">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 1 0 10 10"/><path d="M12 2v10l7 4"/></svg>
+      Automatiza, no reemplaza
+    </div>
+    <div class="chip">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      Riesgo: dependencia y errores ocultos
+    </div>
+  </div>
+
+  <div class="card" onclick="toggle(this)">
+    <div class="card-head">
+      <span class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span>
+      ¿La IA reemplaza a los desarrolladores?
+      <span class="chevron">▾</span>
+    </div>
+    <div class="content-wrap">
+      <div class="content">
+        <div>
+            Según Flor Lorena en <strong>"Reemplazo de Personal Humano por Inteligencia Artificial: 
+            Ventajas y Desventajas"</strong>, no. Siempre hará falta la mente humana para programar 
+            actividades para estas tecnologías.
+            <br> Es decir, la IA no reemplaza a los humanos 
+            por completo: automatiza tareas repetitivas y acelera el trabajo, 
+            pero la toma de decisiones, el diseño de soluciones y la validación siguen 
+            dependiendo de personas.
+            <br> Para mejorar la eficiencia en un ambiente laboral, se debe de buscar el 
+            balance entre el <span class="neon-morado">hombre</span> y la <span class="neon-morado">máquina</span>.
+            <span class="source">Flor Maria Lorena Estrada Carrera (%2023). REEMPLAZO DE PERSONAL HUMANO POR INTELIGENCIA ARTIFICIAL: VENTAJAS Y DESVENTAJAS. Vol. 15 Núm. 25 (2022): Revista Investigación y Negocios. https://doi.org/10.38147/invneg.v15i25.213</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" onclick="toggle(this)">
+    <div class="card-head">
+      <span class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></span>
+      Vulnerabilidades del uso de IA
+      <span class="chevron">▾</span>
+    </div>
+    <div class="content-wrap">
+      <div class="content">
+        <div>
+            Entre los riesgos principales están:
+            <ul>
+                <li>Código inseguro generado sin revisión.</li>
+                <li>Dependencia excesiva de las sugerencias del modelo.</li>
+                <li>Errores invisibles que pasan desapercibidos sin una validación cuidadosa.</li>
+                <li>El peligro de ser hackeados.</li>
+                <li>Falta de empatía en entornos de trabajo y servicios.</li>
+                <li>Necesidad de mantenimiento y reparaciones costosas.</li>
+                <li>Tasas de desempleo y disminución en la recaudación de impuestos para el Estado.</li>
+            </ul> 
+            <span class="source">Flor Maria Lorena Estrada Carrera (%2023). REEMPLAZO DE PERSONAL HUMANO POR INTELIGENCIA ARTIFICIAL: VENTAJAS Y DESVENTAJAS. Vol. 15 Núm. 25 (2022): Revista Investigación y Negocios. https://doi.org/10.38147/invneg.v15i25.213</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- IMÁGENES TEMA 2 -->
+  <div class="img-grid">
+    <div>
+        <div class="img-frame img-frame--violet video-frame"onclick="openVideo('YtztyPQrMG0')">
+            <img src="https://img.youtube.com/vi/YtztyPQrMG0/maxresdefault.jpg" alt="Video IA">
+        </div>
+
+        <p class="mono video-caption" style="font-size: 12px; color: #9c81eb">
+            Da clic para reproducir el material
+        </p>
+    </div>
+    <div class="img-frame img-frame--violet">
+      <img src="/images/vibe-coding.gif" alt="Ilustración de vulnerabilidades de código" onerror="this.style.display='none'">
+    </div>
+  </div>
+</section>
+
+<!-- ----------- TEMA 3 ----------- -->
+<section id="tema3" class="section section--rose">
+  <div class="section-head">
+    <div class="section-num mono">03</div>
+    <div>
+      <span class="kicker">Tema 03</span>
+      <h2>Educación, ética y aprendizaje</h2>
+    </div>
+  </div>
+
+  <div class="chips">
+    <div class="chip">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+      Responsabilidad del usuario
+    </div>
+    <div class="chip">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.663 17h4.673M12 3v1m6.364 1.636-.707.707M21 12h-1M4 12H3m3.343-5.657-.707-.707m2.121 12.728a4 4 0 0 1 5.657 0M9 21h6"/></svg>
+      Pensamiento crítico
+    </div>
+  </div>
+
+  <div class="card" onclick="toggle(this)">
+    <div class="card-head">
+      <span class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></span>
+      ¿Dónde está el límite?
+      <span class="chevron">▾</span>
+    </div>
+    <div class="content-wrap">
+      <div class="content">
+        <div>
+            El límite está en la responsabilidad del usuario y el criterio 
+            profesional: la herramienta puede sugerir, pero la decisión 
+            final y sus consecuencias siguen siendo humanas.
+            <ul>
+                <li>La IA tiene un límite también: no puede replicar 
+                    el pensamiento metodológico, el criterio ético 
+                    profundo ni la formación de seres humanos probos.</li>
+            </ul>
+            <strong>El límite real es que la tecnología siempre se mantiene como 
+            un medio que requiere el pensamiento humano fundamental para
+            auxiliar a la educación.</strong>
+            <span class="source">Cotrina-Aliaga, J. C., Vera-Flores, M. Ángel, Ortiz-Cotrina, W. C., & Sosa-Celi, P. (2021). Use of Artificial Intelligence (AI) as a strategy in higher education. Revista Iberoamericana De educación. https://doi.org/10.31876/ie.vi.81</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" onclick="toggle(this)">
+    <div class="card-head">
+      <span class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"> <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/> <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 0 4 24V4.5A2.5 2.5 0 0 1 6.5 2z"/> </svg> </span>
+     ¿Qué hay que cambiar en la forma de educar?
+      <span class="chevron">▾</span>
+    </div>
+    <div class="content-wrap">
+      <div class="content">
+        <div>
+            Uno de los cambios más importantes que enfrentan las instituciones de educación es
+            que debe de cambiar en su educación. Cómo respuesta al rápido crecimiento de la 
+            Inteligencia Artificial y la tecnología en general, se pueden esperar estos cambios:
+            <ol>
+                <li><strong>Ya no más memorización</strong>. La IA puede almacenar mucha más información que cualquier humano.
+                    En su lugar, los estudiantes deben de prepararse para la obtención y verificación de información.
+                </li>
+                <li><strong>Mirar al futuro</strong>. La IA saca la información dado el futuro. Por lo tanto, para lograr la 
+                    innovación, es necesario que sean los estudiantes los que vean más allá de las estadísticas y patrones.
+                </li>
+                <li><strong>Priorizar la ética</strong>. Gracias a un mundo que cambia cada día, es importante que se formen humanos que 
+                    entiendan el impacto y la responsabilidad de su trabajo.
+                </li>
+            </ol>
+            <span class="source">Cotrina-Aliaga, J. C., Vera-Flores, M. Ángel, Ortiz-Cotrina, W. C., & Sosa-Celi, P. (2021). Use of Artificial Intelligence (AI) as a strategy in higher education. Revista Iberoamericana De educación. https://doi.org/10.31876/ie.vi.81</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" onclick="toggle(this)">
+    <div class="card-head">
+      <span class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg></span>
+      ¿Qué debe cambiar en los profesionistas?
+      <span class="chevron">▾</span>
+    </div>
+    <div class="content-wrap">
+      <div class="content">
+        <div>
+            En el artículo de Cotrina-Aliaga, Vera-Flores, Ortiz-Cotrina y Sosa-Celi, 
+            "Use of Artificial Intelligence (AI) as a strategy in higher education", se 
+            publica la idea que las universidades deben de cambiar las formaciones de los 
+            profesionisatas. Por lo tanto, hay 2 cambios principales a esperar:
+            <ol>
+                <li><strong>Desarrollo de competencias digitales</strong>: Donde deberán de aprender a 
+                    conocer el funcionamiento de las tecnologías con las que se enfrentan
+                    en su día a día.
+                </li>
+                <li><strong>Desarrollo de pensamiento computacional</strong>: Porque cada profesional
+                deberá de aprender a segmentar un problema grande en unos más pequeños, mantener una 
+                mente creativa y abierta a distintas soluciones y, finalmente, deberán de aprender a 
+                tomar un rol cómo principal agente de conocimiento.</li>
+            </ol>
+            <span class="source">Cotrina-Aliaga, J. C., Vera-Flores, M. Ángel, Ortiz-Cotrina, W. C., & Sosa-Celi, P. (2021). Use of Artificial Intelligence (AI) as a strategy in higher education. Revista Iberoamericana De educación. https://doi.org/10.31876/ie.vi.81</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- IMÁGENES TEMA 3 -->
+  <div class="img-grid">
+
+  <!-- Video 1 -->
+  <div>
+    <div class="img-frame img-frame--rose video-frame"
+         onclick="openVideo('2qbTmlaKaZ8')">
+
+      <img src="https://img.youtube.com/vi/2qbTmlaKaZ8/maxresdefault.jpg"
+           alt="Video sobre ética e IA">
+
+    </div>
+
+    <p class="mono video-caption"
+       style="font-size:12px; color:#d86d93;">
+      Da clic para reproducir el material
+    </p>
+  </div>
+
+  <!-- Video 2 -->
+  <div>
+    <div class="img-frame img-frame--rose video-frame"
+         onclick="openVideo('9N1iYDHRZ14')">
+
+      <img src="https://img.youtube.com/vi/9N1iYDHRZ14/maxresdefault.jpg"
+           alt="Video sobre educación e IA">
+
+    </div>
+
+    <p class="mono video-caption"
+       style="font-size:12px; color:#d86d93;">
+      Da clic para reproducir el material
+    </p>
+  </div>
+
+</div>
+</section>
+
+<!-- ----------- CONCLUSIÓN ----------- -->
+<section id="conclusion" class="section section--amber">
+  <div class="section-head">
+    <div class="section-num mono">04</div>
+    <div>
+      <span class="kicker">Conclusión</span>
+      <h2>Cierre</h2>
+    </div>
+  </div>
+  <div class="card" onclick="toggle(this)">
+    <div class="card-head">
+      <span class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"> <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/> <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 0 4 24V4.5A2.5 2.5 0 0 1 6.5 2z"/> </svg> </span>
+     ¿Cómo he usado la Inteligencia Artificial en el curso?
+      <span class="chevron">▾</span>
+    </div>
+    <div class="content-wrap">
+      <div class="content">
+        <div style="text-align:left;">
+            Durante el curso he utilizado la ayuda de la Inteligencia Artificial de diferentes maneras.
+            Para empezar, la utilicé para pequeñas investigaciones sobre temas simples. Esto con el fin de 
+            obtener información rápida y clara a un nivel introductorio. Además he usado la IA para encontrar 
+            o entender los errores que me aparecían en consola dentro de un programa. Esto, considero yo, que ha 
+            sido la parte más útil, pues al haber demasiados tipos de errores, es difícil ubicarlos de manera rápida
+            y es así cómo la corrección de errores toma más tiempo que la escritura de código en si. Finalmente,
+            en ocasiones he hecho uso de esta herramienta para generar código base. <br><br>
+            Mientras apoyo el uso de Inteligencia Artificial como una herramienta que optimiza tiempos y 
+            ayuda a clarificar temas, también incito a que cada pregunta o tarea que se le asigne a una IA 
+            sea revisada. No solo esta se puede equivocar, sino que también puede generar cosas que no se pidieron.
+            La Inteligencia Artificial debe de ser tratada como una herramienta que auxilia a nuestros proyectos y 
+            nuestra propia inteligencia humana, no cómo lo que viene a remplazarla.
+        </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" onclick="toggle(this)">
+    <div class="card-head">
+      <span class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"> <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/> <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 0 4 24V4.5A2.5 2.5 0 0 1 6.5 2z"/> </svg> </span>
+     ¿Cómo me visualizo en unos años?
+      <span class="chevron">▾</span>
+    </div>
+    <div class="content-wrap">
+      <div class="content">
+        <div style="text-align:left;">
+            Cuando haya entrado al mundo laboral, espero no solo tener los conocimientos necesarios para no depender 
+            de la IA para mi trabajo, sino que también me gustaría tener una idea muy clara de cómo puedo integrarla 
+            a mi trabajo de manera ética y segura. Cómo ya mencioné, mi propósito no es eliminar a la Inteligencia 
+            Artificial de ningún ambiente, sino a limitarla adecuadamente. Finalmente, espero poder platicar con otros 
+            profesionistas sobre su uso de IA sin problemas ni prejuicios y enseñar tanto cómo aprendo de ellos.
+        </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div>
+    <p class="quote">La Inteligencia Artificial puede ser lo mejor o lo peor que le pase a los desarrolladores de software. El desenlace está en nuestras manos humanas.</p>
+    <p style="font-size: 20px; color: #0e7490;"> - Valeria Rosado</p>
+  </div>
+  
+</section>
+
+</main>
+
+<footer>
+  Investigación interactiva · IA Generativa · 2026
+</footer>
+
+<!-- ----------- MODAL VIDEO ----------- -->
+<div id="modal" class="modal">
+  <div class="modal-content">
+    <span onclick="closeVideo()" class="close">&times;</span>
+    <iframe id="videoFrame"
+      width="100%" height="360"
+      src=""
+      frameborder="0"
+      allowfullscreen>
+    </iframe>
+  </div>
+</div>
+
+<script>
+function scrollToSection(id) {
+  document.getElementById(id).scrollIntoView({ behavior: "smooth" });
+}
+
+function toggle(card) {
+  card.classList.toggle("active");
+}
+
+function openVideo(videoId) {
+  const modal = document.getElementById("modal");
+  const frame = document.getElementById("videoFrame");
+
+  frame.src = `https://www.youtube.com/embed/${videoId}`;
+
+  modal.style.display = "flex";
+}
+
+function closeVideo() {
+  document.getElementById("modal").style.display = "none";
+  document.getElementById("videoFrame").src = "";
+}
+
+document.getElementById("modal").addEventListener("click", (e) => {
+  if (e.target.id === "modal") closeVideo();
+});
+
+// progress bar
+window.addEventListener("scroll", () => {
+  const h = document.documentElement;
+  const scrolled = (h.scrollTop) / (h.scrollHeight - h.clientHeight) * 100;
+  document.getElementById("progressFill").style.width = scrolled + "%";
+});
+
+// active nav link on scroll
+const sections = document.querySelectorAll(".section");
+const navButtons = document.querySelectorAll(".navbar button");
+
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      navButtons.forEach(btn => btn.classList.remove("active"));
+      const active = document.querySelector(`.navbar button[data-target="${entry.target.id}"]`);
+      if (active) active.classList.add("active");
+    }
+  });
+}, { rootMargin: "-45% 0px -45% 0px" });
+
+sections.forEach(sec => observer.observe(sec));
+</script>
+
+</body>
+</html>
